@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="14.basket.css">
+    <title>Document</title>
+</head>
+<body>
+    <section class="cart">
+        <div class="cart__information">
+            <ul>
+                <li>장바구니 상품은 최대 30일간 저장됩니다.</li>
+                <li>가격, 옵션 등 정보가 변경된 경우 주문이 불가할 수 있습니다.</li>
+                <li>오늘출발 상품은 판매자 설정 시점에 따라 오늘출발 여부가 변경될 수 있으니 주문 시 꼭 다시 확인해 주시기 바랍니다.</li>
+            </ul>
+        </div>
+        <table class="cart__list">
+            <form>
+                <thead>
+                    <tr>
+                        <td><input type="checkbox" id="allChk" onchange="allChk1()"></td>
+                        <td>상품정보</td>
+                        <td>옵션</td>
+                        <td>상품금액</td>
+                        <td>배송비</td>
+                    </tr>
+                    <tr id="hidden">
+                        <td colspan="5">
+                            장바구니가 비어있습니다. 물건을 주문해주세요.</td>
+                    </tr>
+                </thead>
+                <tbody id="cart__list"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"><input type="checkbox">
+                            <input
+                                type="button"
+                                class="cart__list__optionbtn"
+                                onclick="delRow()"
+                                value="선택상품삭제" style="font-size: 15px;">
+                            <button class="cart__list__optionbtn" style="font-size: 15px;">선택상품 찜</button>
+                        </td>
+                        <td></td>
+                        <td style="text-align: center;">
+                            선택상품금액
+                            <span id="allGoods"> 원</span>
+                            + 총 배송비
+                            <span id="allDlv"> 원</span></td>
+                        <td
+                            style="text-align: center; color: limegreen; border-left: 1px lightgray solid;">
+                            주문금액
+                            <span id="allPri"> 원</span></td>
+                    </tr>
+                </tfoot>
+            </form>
+        </table>
+
+        <table class="buyGoods">
+            <form>
+                <thead>
+                    <tr>
+                        <td>상품정보</td>
+                        <td>옵션</td>
+                        <td>상품금액</td>
+                        <td>배송비</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="cart__list__detail">
+                        <td style="width: 40%;"><input type="text" id="goodsInfo" size="40" placeholder="상품명"></td>
+                        <td class="cart__list__option" style="width: 27%;">
+                            상품 주문 수량 <input type="number" id="goodsCnt" min="1" value="1" style="width: 40px;" placeholder="상품개수"> 개
+                        </td>
+                        <td style="width: 15%;">
+                            <span class="price"><input type="text" id="goodsPrice" size="10" placeholder="상품가격"> 원</span>
+                        </td>
+                        <td style="width: 15%;"><input type="text" id="goodsDlv" size="10" placeholder="배송비"> 원</td>
+                    </tr>
+                </tbody>
+            </form>
+        </table>
+        <div class="cart__mainbtns">
+            <button class="cart__bigorderbtn left">쇼핑 계속하기</button>
+            <button class="cart__bigorderbtn right" onclick="addRow()">주문하기</button>
+        </div>
+    </section>
+
+<script>
+    // 전체 선택/해제 함수
+    function allChk1() {
+        const allChk = document.querySelector('#allChk');  // 전체 선택 체크박스
+        const checkboxes = document.querySelectorAll('.checkbox');  // 모든 상품 체크박스
+        
+        checkboxes.forEach(function(checkbox) {
+            checkbox.checked = allChk.checked;  // 전체 선택 체크박스 상태로 모든 체크박스를 설정
+        });
+    }
+    // 상품 행 추가 함수
+    function addRow() {
+        let cart__list = document.getElementById('cart__list');
+        var goodsInfo = document.getElementById('goodsInfo').value;
+        var goodsCnt = document.getElementById('goodsCnt').value;
+        var goodsPrice = document.getElementById('goodsPrice').value;
+        var goodsDlv = document.getElementById('goodsDlv').value;
+
+        let newOrder = cart__list.insertRow(); // 새로운 행 추가
+
+        let cell1 = newOrder.insertCell(0); // 체크박스 셀
+        let cell2 = newOrder.insertCell(1); // 상품 정보 셀
+        let cell3 = newOrder.insertCell(2); // 옵션 셀
+        let cell4 = newOrder.insertCell(3); // 상품 금액 셀
+        let cell5 = newOrder.insertCell(4); // 배송비 셀
+
+        cell1.innerHTML = "<input type='checkbox' class='checkbox'>";
+        cell2.innerHTML = goodsInfo;
+        cell3.innerHTML = goodsCnt;
+        cell4.innerHTML = goodsPrice * goodsCnt + "원";
+        cell5.innerHTML = goodsDlv + "원";
+
+        updateTotal();
+
+        const cc = document.getElementById('hidden');
+        cc.style.display = 'none';
+    }
+    // 선택된 상품 삭제 함수
+    function delRow() {
+        let cart__list = document.getElementById('cart__list');
+        for (let i = 0; i < cart__list.rows.length; i++) {
+            if (cart__list.rows[i].cells[0].children[0].checked) {
+                cart__list.deleteRow(i);
+                i--;
+            }
+        }
+
+        // 장바구니가 비었을 때 "장바구니가 비어있습니다" 문구 표시
+        if (cart__list.rows.length === 0) {
+            const cc = document.getElementById('hidden');
+            cc.style.display = '';
+        }
+
+        
+        updateTotal();
+    }
+    // 총합 계산
+    function updateTotal() {
+        let cart__list = document.getElementById('cart__list');
+        let totalGoods = 0;
+        let totalDlv = 0;
+
+        for (let i = 0; i < cart__list.rows.length; i++) {
+            let row = cart__list.rows[i];
+            let goodsPrice = row.cells[3].innerText.replace(" 원", "");
+            let shippingFee = row.cells[4].innerText.replace(" 원", "");
+
+            totalGoods += parseInt(goodsPrice);
+            totalDlv += parseInt(shippingFee);
+        }
+
+        // 주문 금액 업데이트
+        let totalAmount = totalGoods + totalDlv;
+        document.getElementById('allGoods').textContent = totalGoods + " 원";
+        document.getElementById('allDlv').textContent = totalDlv + " 원";
+        document.getElementById('allPri').textContent = totalAmount + " 원";
+    }
+</script>
+
+</html>
